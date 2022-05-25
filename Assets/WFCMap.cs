@@ -97,7 +97,7 @@ public class WFCMap {
                 if (hasTop) grid.CloseTile(i, grid.Size - 1, topChunk[i, 0]);
             }
         }
-        /*
+        
         //topleft
         if(HasChunk(x-1, y+1))
         {
@@ -118,7 +118,7 @@ public class WFCMap {
         {
             grid.CloseTile(grid.Size - 1, 0, GetChunk(x + 1, y - 1)[0, grid.Size - 1]);
         }
-        */
+        
 
         //Fill with random biome
         int[] biomeIndexes = new int[] { 9, 16, 19, 29, 22, 24, 26, 25 };

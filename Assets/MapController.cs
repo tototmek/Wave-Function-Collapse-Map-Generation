@@ -16,7 +16,7 @@ public class MapController : MonoBehaviour
     private HashSet<WFCPrototype> readyPrototypes = new HashSet<WFCPrototype>();
     private List<WFCPrototype> temp_prototypes = new List<WFCPrototype>();
     public Camera camera;
-    public float scale = 3;
+    private float scale;
 
 
     private struct Tile
@@ -117,6 +117,7 @@ public class MapController : MonoBehaviour
             readyPrototypes.Add(prototype);
         }
 
+        scale = 1 / transform.localScale.x;
         LoadNewMap();
         
     }

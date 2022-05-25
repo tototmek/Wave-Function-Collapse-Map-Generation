@@ -424,7 +424,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7b084f9fcdc8e2548ad7109f97be2909, type: 2}
   - {fileID: 11400000, guid: 4b82766c215b2b14b8047b261c0074d5, type: 2}
   camera: {fileID: 115605345}
-  scale: 2
 --- !u!156049354 &743899943
 Grid:
   m_ObjectHideFlags: 0
