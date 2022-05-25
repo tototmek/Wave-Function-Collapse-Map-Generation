@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f5f7a8ef0b2f6d449a1bb963d42d4f8, type: 3}
+  m_Name: water 4
+  m_EditorClassIdentifier: 
+  tile: {fileID: 11400000, guid: 11759eeec7bb01747929578241acfc23, type: 2}
+  chance: 0.02
+  spawnOnlyAdjacentTo: []
+  spawnOnlyLeftFrom:
+  - {fileID: 11400000, guid: bc55b96c0a65e4e46bf0c447b38c7c96, type: 2}
+  - {fileID: 11400000, guid: 29863e94da4935c459f86c004fb664ed, type: 2}
+  - {fileID: 11400000, guid: a1f9d3b293e3a394ab85674e1ef4d8de, type: 2}
+  - {fileID: 11400000, guid: 572e5071500246842a3390676b7633e1, type: 2}
+  spawnOnlyRightFrom:
+  - {fileID: 11400000, guid: 29863e94da4935c459f86c004fb664ed, type: 2}
+  - {fileID: 11400000, guid: 38d35b4fde014c04cbc4d2694eb14d11, type: 2}
+  spawnOnlyAbove:
+  - {fileID: 11400000, guid: bc55b96c0a65e4e46bf0c447b38c7c96, type: 2}
+  - {fileID: 11400000, guid: d0a0e047051d09b42a4699dac7ac4c7c, type: 2}
+  - {fileID: 11400000, guid: a1f9d3b293e3a394ab85674e1ef4d8de, type: 2}
+  - {fileID: 11400000, guid: 9549536e439ac1448bd03f52fc64a30e, type: 2}
+  spawnOnlyBelow:
+  - {fileID: 11400000, guid: fe384797d5e5d414aab70edb23b807a0, type: 2}
+  - {fileID: 11400000, guid: 273a9455665c85449ace918894c79eef, type: 2}
