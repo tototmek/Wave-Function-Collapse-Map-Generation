@@ -33,7 +33,6 @@ public class WFCMap {
 
     public int[,] GetChunk(int x, int y)
     {
-        Debug.Log("Requesting chunk at " + x + ", " + y);
         if (map.ContainsKey((x,y))) {
             return map[(x, y)];
         }
@@ -46,6 +45,11 @@ public class WFCMap {
     public bool HasChunk(int x, int y)
     {
         return map.ContainsKey((x, y));
+    }
+
+    public int GetGridSize()
+    {
+        return actualGridSize;
     }
 
     private int[,] GenerateChunk(int x, int y) 
@@ -121,7 +125,7 @@ public class WFCMap {
         
 
         //Fill with random biome
-        int[] biomeIndexes = new int[] { 9, 16, 19, 29, 22, 24, 26, 25 };
+        int[] biomeIndexes = new int[] { 9, 16, 19, 29, 22, 24, 26, 25, 30 };
         int biomeIndex = random.Next(biomeIndexes.Length);
         grid.CloseTile(grid.Size / 2, grid.Size / 2, biomeIndexes[biomeIndex]);
 

@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -13,10 +13,13 @@ public class MapController : MonoBehaviour
     public Tilemap tilemap;
     private List<TileBase> tiles = new List<TileBase>();
     public Prototype[] prototypes;
-    private HashSet<WFCPrototype> readyPrototypes = new HashSet<WFCPrototype>();
     private List<WFCPrototype> temp_prototypes = new List<WFCPrototype>();
     public Camera camera;
     private float scale;
+    private WorkerThread workerThread;
+    private List<(int, int)> loadedChunks;
+    private List<(int, int)> visibleChunks;
+    [SerializeField] private Transform view;
 
 
     private struct Tile
@@ -29,97 +32,11 @@ public class MapController : MonoBehaviour
 
     void Start()
     {
-        // Parse prototypes
-        int currentId = 0;
-        foreach (Prototype data in prototypes)
-        {
-            // Create prototypes, set IDs
-            WFCPrototype prototype = new WFCPrototype(4);
-            data.id = currentId;
-            prototype.Id = currentId++;
-            data.Activate();
-            prototype.weight = data.chance;
-            temp_prototypes.Add(prototype);
-            tiles.Add(data.tile);
-            
-        }
-        foreach (Prototype data in prototypes)
-        {
-            // Adjacent to
-            if (data.spawnOnlyAdjacentTo.Count > 0)
-            {
-                // Add correct prototypes
-                foreach (Prototype allowedNeighbourData in data.spawnOnlyAdjacentTo)
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (allowedNeighbourData.Active)
-                        {
-                            temp_prototypes[data.id].allowedNeighbours[i].Add(temp_prototypes[allowedNeighbourData.id]);
-                            temp_prototypes[allowedNeighbourData.id].allowedNeighbours[i].Add(temp_prototypes[data.id]);
-                        }
-                    }
-                }
-            }
-            // Left from
-            if (data.spawnOnlyLeftFrom.Count > 0)
-            {
-                foreach (Prototype allowedNeighbourData in data.spawnOnlyLeftFrom)
-                {
-                    if (allowedNeighbourData.Active)
-                    {
-                        temp_prototypes[data.id].allowedNeighbours[1].Add(temp_prototypes[allowedNeighbourData.id]);
-                        temp_prototypes[allowedNeighbourData.id].allowedNeighbours[0].Add(temp_prototypes[data.id]);
-                    }
-                }
-            }
-            // Right from
-            if (data.spawnOnlyRightFrom.Count > 0)
-            {
-                foreach (Prototype allowedNeighbourData in data.spawnOnlyRightFrom)
-                {
-                    if (allowedNeighbourData.Active)
-                    {
-                        temp_prototypes[data.id].allowedNeighbours[0].Add(temp_prototypes[allowedNeighbourData.id]);
-                        temp_prototypes[allowedNeighbourData.id].allowedNeighbours[1].Add(temp_prototypes[data.id]);
-                    }
-                }
-            }
-            // Above
-            if (data.spawnOnlyAbove.Count > 0)
-            {
-                foreach (Prototype allowedNeighbourData in data.spawnOnlyAbove)
-                {
-                    if (allowedNeighbourData.Active)
-                    {
-                        temp_prototypes[data.id].allowedNeighbours[3].Add(temp_prototypes[allowedNeighbourData.id]);
-                        temp_prototypes[allowedNeighbourData.id].allowedNeighbours[2].Add(temp_prototypes[data.id]);
-                    }
-                }
-            }
-            // Below
-            if (data.spawnOnlyBelow.Count > 0)
-            {
-                foreach (Prototype allowedNeighbourData in data.spawnOnlyBelow)
-                {
-                    if (allowedNeighbourData.Active)
-                    {
-                        temp_prototypes[data.id].allowedNeighbours[2].Add(temp_prototypes[allowedNeighbourData.id]);
-                        temp_prototypes[allowedNeighbourData.id].allowedNeighbours[3].Add(temp_prototypes[data.id]);
-                    }
-                }
-            }
-        }
-
-
-        foreach (WFCPrototype prototype in temp_prototypes)
-        {
-            readyPrototypes.Add(prototype);
-        }
-
+        (temp_prototypes, tiles) = WFCUtils.GeneratePrototypes(prototypes);
         scale = 1 / transform.localScale.x;
+        loadedChunks = new List<(int, int)>();
         LoadNewMap();
-        
+        workerThread = new WorkerThread(this);
     }
 
     private void Update()
@@ -136,14 +53,56 @@ public class MapController : MonoBehaviour
                     new Vector3(mousePos.x * scale, mousePos.y * scale, 0)
                 );
             Debug.Log("Clicked at " + mousePos.x + ", " + mousePos.y);
-            Debug.Log("Loading chunk " + chunkX + ", " + chunkY);
-            LoadChunk(chunkX, chunkY);
+            Debug.Log("At chunk " + chunkX + ", " + chunkY);
+        }
+
+        // Generate chunks on another thread
+        if (workerThread.showRequests.Count > 0)
+        {
+            (int[,] grid, int x, int y) = workerThread.showRequests.Dequeue();
+            ShowTiles(grid, x, y);
+        }
+
+        // Find all visible chunks
+        visibleChunks = new List<(int, int)>();
+        (int centerX, int centerY) = map.WorldToChunkCoords(
+            new Vector3(view.position.x * scale, view.position.y * scale, 0));
+        for (int x = centerX - 2; x <= centerX + 2; x++)
+        {
+            for (int y = centerY - 2; y <= centerY + 2; y++)
+            {
+                visibleChunks.Add((x, y));
+            }
+        }
+
+
+        // Manage chunk loading and unloading
+        foreach ((int x, int y) in visibleChunks)
+        {
+            if (!loadedChunks.Contains((x, y)))
+            {
+                loadedChunks.Add((x, y));
+                RequestChunk(x, y);
+            }
+        }
+        for  (int i = loadedChunks.Count -1; i >= 0; i--)
+        {
+            if (!visibleChunks.Contains(loadedChunks[i]))
+            {
+                (int x, int y) = loadedChunks[i];
+                RemoveChunk(map.GetGridSize(), x, y);
+                loadedChunks.RemoveAt(i);
+            }
         }
     }
 
-    private void LoadChunk(int chunkX, int chunkY)
+    public int[,] LoadChunk(int chunkX, int chunkY)
     {
-        int[,] grid = map.GetChunk(chunkX, chunkY);
+        return map.GetChunk(chunkX, chunkY);
+    }
+
+    public void ShowTiles(int[,] grid, int chunkX, int chunkY)
+    {
         for (int x = 0; x < grid.GetLength(0) - 1; x++)
         {
             for (int y = 0; y < grid.GetLength(1) - 1; y++)
@@ -157,21 +116,70 @@ public class MapController : MonoBehaviour
         }
     }
 
+    public void RemoveChunk(int gridSize, int chunkX, int chunkY)
+    {
+        for (int x = 0; x < gridSize - 1; x++)
+        {
+            for (int y = 0; y < gridSize - 1; y++)
+            {
+                tilemap.SetTile(
+                    new Vector3Int(
+                        chunkX * (chunkSize) + x,
+                        chunkY * (chunkSize) + y, 0),
+                    null);
+            }
+        }
+    }
+
+    public void RequestChunk(int chunkX, int chunkY)
+    {
+        workerThread.PutRequest(chunkX, chunkY);
+    }
+
     private void LoadNewMap()
     {
         map = new WFCMap(chunkSize, temp_prototypes, new System.Random().Next(12124124));
-        /*
-        int[,] grid = map.GetMapAtPosition(Vector3.zero);
-        for (int x = 0; x < grid.GetLength(0); x++)
+        LoadChunk(0, 0);
+    }
+
+
+}
+
+public class WorkerThread
+{
+    private Thread thread;
+    private Queue<(int, int)> requests;
+    public Queue<(int[,], int, int)> showRequests;
+    private MapController parent;
+    public WorkerThread(MapController parent)
+    {
+        this.parent = parent;
+        requests = new Queue<(int, int)>();
+        showRequests = new Queue<(int[,], int, int)>();
+        thread = new Thread(new ThreadStart(WaitAndGenerate));
+        thread.Start();
+    }
+
+    private void WaitAndGenerate()
+    {
+        while(true)
         {
-            for (int y = 0; y < grid.GetLength(1); y++)
+            if (requests.Count > 0)
             {
-                Debug.Log(grid[x, y]);
-                tilemap.SetTile(new Vector3Int(x, y, 0), tiles[grid[x, y]]);
+                (int x, int y) = requests.Dequeue();
+                PutShowRequest(parent.LoadChunk(x, y), x, y);
             }
         }
-        */
-        LoadChunk(0, 0);
+    }
+
+    public void PutRequest(int chunkX, int chunkY)
+    {
+        requests.Enqueue((chunkX, chunkY));
+    }
+
+    private void PutShowRequest(int[,] grid, int chunkX, int chunkY)
+    {
+        showRequests.Enqueue((grid, chunkX, chunkY));
     }
 }
 

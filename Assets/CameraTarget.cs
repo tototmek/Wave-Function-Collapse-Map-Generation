@@ -8,6 +8,13 @@ public class CameraTarget : MonoBehaviour
     private Vector3 previousMousePos;
     private Vector3 currentMousePos;
     private bool mouseDown = false;
+    Vector3 targetPos;
+    [SerializeField] [Range(0, 10)] private float lerpSpeed=1;
+
+    private void Start()
+    {
+        targetPos = transform.position;
+    }
 
     private void Update()
     {
@@ -17,14 +24,19 @@ public class CameraTarget : MonoBehaviour
         {
             mouseDown = true;
             previousMousePos = currentMousePos;
+            targetPos = transform.position;
         }
         if (mouseDown)
         {
-            transform.position -= currentMousePos - previousMousePos;
+            targetPos = transform.position -currentMousePos + previousMousePos;
         }
         if (Input.GetMouseButtonUp(0))
         {
             mouseDown = false;
         }
+        transform.position = Vector3.Lerp(
+            transform.position,
+            targetPos,
+            lerpSpeed * Mathf.Min(Time.deltaTime, 1f));
     }
 }

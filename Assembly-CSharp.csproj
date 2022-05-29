@@ -62,6 +62,7 @@
     <Compile Include="Assets\MapController.cs" />
     <Compile Include="Assets\WFCGrid.cs" />
     <Compile Include="Assets\CameraTarget.cs" />
+    <Compile Include="Assets\WFCUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

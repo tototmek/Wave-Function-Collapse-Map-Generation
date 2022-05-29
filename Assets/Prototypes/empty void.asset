@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f5f7a8ef0b2f6d449a1bb963d42d4f8, type: 3}
-  m_Name: empty
+  m_Name: empty void
   m_EditorClassIdentifier: 
   tile: {fileID: 11400000, guid: 1fe7aa73c1c08ae4885b305450eaf8da, type: 2}
-  chance: 2
+  chance: 1
   spawnOnlyAdjacentTo:
+  - {fileID: 11400000, guid: 980ff7932c5a8b74fb77549622a03cbe, type: 2}
   - {fileID: 11400000}
   spawnOnlyLeftFrom: []
   spawnOnlyRightFrom: []

@@ -423,7 +423,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: eb11de8964968b5498b726870370e5f2, type: 2}
   - {fileID: 11400000, guid: 7b084f9fcdc8e2548ad7109f97be2909, type: 2}
   - {fileID: 11400000, guid: 4b82766c215b2b14b8047b261c0074d5, type: 2}
+  - {fileID: 11400000, guid: af4f8f2045035594a9ddd57dd7942cfa, type: 2}
   camera: {fileID: 115605345}
+  view: {fileID: 1504810479}
 --- !u!156049354 &743899943
 Grid:
   m_ObjectHideFlags: 0
@@ -445,7 +447,7 @@ Transform:
   m_GameObject: {fileID: 743899941}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.33, y: 0.33, z: 1}
   m_Children:
   - {fileID: 163166734}
   m_Father: {fileID: 0}
@@ -481,6 +483,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   camera: {fileID: 115605345}
+  lerpSpeed: 7.34
 --- !u!4 &1504810479
 Transform:
   m_ObjectHideFlags: 0
